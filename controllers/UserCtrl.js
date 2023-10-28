@@ -1,6 +1,7 @@
 const UserService = require("../services/UserSvc");
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
+const mailService = require('../services/mailSvc');
 
 const UserContoller = {
     // registering a user
@@ -66,6 +67,43 @@ const UserContoller = {
                 discription : error
             });
         }
+   },
+
+   // send mail
+   sendMail : async (req, res) => {
+    try{
+            const userInfo = await UserService.getByEmail(req.body.email);
+            if (userInfo) {
+                const emailInfo = await mailService.sendEmail(userInfo);
+                res.status(200);
+                res.send({ data: emailInfo });
+            } else {
+                res.status(409);
+                res.send({ error: 'Conflict', errorDescription: "User doesn't exist with this email address" });
+            }
+        } catch (error) {
+            res.status(500);
+            res.send({ error });
+        }
+   },
+
+   // update password
+
+   update : async (req, res) => {
+    try {
+        // const userinfo = await UserService.getByEmail(req.body.email);
+        const hashPassword = await bcrypt.hash(req.body.password, 5);
+        req.body.password = hashPassword;
+        const upadateUserInfo = await UserService.update({...req.body});
+        res.status(200);
+        res.send({
+            status : "updated",
+            data : upadateUserInfo
+        })
+    }catch(err){
+        res.status(500);
+        res.send({err});
+    }
    }
 
 }

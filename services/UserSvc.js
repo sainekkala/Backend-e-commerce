@@ -7,6 +7,9 @@ const UserService = {
     addUser : (data) => {
         const newUser = new UserModel (data);
         return newUser.save();
+    },
+    update : (data) => {
+        return UserModel.findOneAndUpdate({email : data.email}, {$set : {password : data.password }}, {new : true})
     }
    
 }
