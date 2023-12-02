@@ -1,4 +1,5 @@
 const ProductService = require("../services/ProductSvc");
+const reviewService = require("../services/reviewSvc");
 
 const ProductCtrl = {
     getAll : async(req, res) => {
@@ -19,9 +20,19 @@ const ProductCtrl = {
     getById : async (req, res) => {
         try{
             const product = await ProductService.getById(req.params.id);
+            const ratings = await reviewService.calCountByProductId(req.params.id);
+            const averageRating = await reviewService.averageRatingByProductId(req.params.id);
+            // console.log(averageRating);
+            // adding property to object
+            const jsonproduct = product.toJSON();
+            jsonproduct.ratings = ratings;
+            // to remove decimal points
+            jsonproduct.averageRating = averageRating?.[0]?.average.toFixed(1);
+            // convert string into number using parsefloat
+            jsonproduct.averageRating = jsonproduct.averageRating ? parseFloat(jsonproduct.averageRating) : undefined;
             res.status(200);
             res.send({
-                data : product
+                data : jsonproduct
             })
         }catch(error){
             res.status(400);
